@@ -3,7 +3,7 @@ name: Build and Push Docker Image to AWS ECR
 on:
   push:
     branches:
-      - main  # Change to your main branch if different
+      - master  # Change to your main branch if different
 
 jobs:
   build:
