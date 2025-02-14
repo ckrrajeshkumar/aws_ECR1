@@ -1,0 +1,58 @@
+services:
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+            args:
+                APP_ENV: ${APP_ENV}  # Pass APP_ENV from .env
+        image: pfm-backend-laravel
+        container_name: pfm_backend_laravel
+        restart: unless-stopped
+        working_dir: /var/www/html
+        volumes:
+            # Mount only specific directories (to avoid performance overhead on Windows)
+            - ./storage:/var/www/html/storage
+            - ./vendor:/var/www/html/vendor
+            - ./docker/apache/certs:/etc/apache2/ssl
+        ports:
+            - 80:80
+            - 443:443
+        networks:
+            - laravel
+        environment:
+            APP_ENV: ${APP_ENV}
+            APP_DEBUG: ${APP_DEBUG}
+
+    mysql:
+        image: mysql:8
+        container_name: laravel_mysql
+        restart: unless-stopped
+        environment:
+            MYSQL_DATABASE: platform_db
+            MYSQL_ROOT_PASSWORD: root
+        ports:
+            - 3306:3306
+        volumes:
+            - db_data:/var/lib/mysql
+        networks:
+            - laravel
+
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        container_name: phpmyadmin
+        restart: unless-stopped
+        environment:
+            PMA_HOST: mysql
+            PMA_USER: root
+            PMA_PASSWORD: root  # Match with MYSQL_ROOT_PASSWORD
+        ports:
+            - 8081:80  # Access phpMyAdmin at 1
+        networks:
+            - laravel
+
+networks:
+    laravel:
+        driver: bridge
+
+volumes:
+    db_data:
